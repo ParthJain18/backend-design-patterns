@@ -1,14 +1,14 @@
 
 # Benchmarks
 
-Ran with **5000 users** on a local machine (Linux), spawning 250 users/sec.
+## Stress Test (5,000 Users)
+Ran with **5,000 users** on a local machine (Linux), spawning 500 users/sec.
+**Note:** System CPU was saturated (>90%). Client and Server ran on the same machine.
 
-| Strategy | RPS | Avg Latency (ms) | Fail Rate (%) | Avg CPU Usage (%) |
-|----------|-----|------------------|---------------|-------------------|
-| Req/Resp | 248.92 | 12,918 | 0.00% | 25.17% |
-| Short Polling | 120.55 | 19,706 | 0.00% | 24.96% |
-| Long Polling | 192.33 | 16,594 | 0.00% | 25.95% |
-| SSE | 8.33 | 27,557 | 0.00% | 28.27% |
-| WebSocket | 83.72 | 36,611 | 100.00%* | 29.31% |
-
-*WebSocket failed to sustain connections at this concurrency level (likely file descriptor or client-side limitation).*
+| Strategy | RPS | Avg Latency (ms) | Fail Rate (%) | Notes |
+|----------|-----|------------------|---------------|-------|
+| Req/Resp | 317.51 | 11,491 | 0.00% | Most stable and lowest latency under load. |
+| Short Polling | 117.81 | 19,578 | 0.00% | High overhead, stable but slow. |
+| Long Polling | 251.05 | 13,978 | 0.00% | Surprisingly performant, second best throughput. |
+| SSE | 32.55 | 19,642 | 0.00% | Streaming is efficient for the Network, but heavy for the CPU/Event Loop. |
+| WebSocket | 105.37 | 34,525 | 42.72% | Massive connection drops. Server loop saturation. |
