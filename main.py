@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from .app.api import req_resp, polling, sse, websocket
+from app.api import req_resp, polling, sse, websocket
 
 
 app = FastAPI()
