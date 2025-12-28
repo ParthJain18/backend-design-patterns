@@ -3,6 +3,7 @@ import time
 import json
 
 jobs = {}
+jobs_2 = {}
 
 async def simulated_work(job_id: str) -> dict:
     jobs[job_id] = {"status": "in_progress", "progress": 0, "started_at": time.time()}
@@ -43,3 +44,38 @@ async def get_job_status_stream(job_id: str):
             if job["status"] == "completed":
                 return
         await asyncio.sleep(0.1)
+
+
+async def simulated_work_queue(job_id: str) -> dict:
+    jobs_2[job_id] = asyncio.Queue()
+    job = {"status": "in_progress", "progress": 0, "started_at": time.time()}
+    await jobs_2[job_id].put(job)
+    
+    for i in range(100):
+        job["progress"] = i + 1
+        await jobs_2[job_id].put(job.copy())
+        await asyncio.sleep(0.1)
+
+    job["status"] = "completed"
+    job["completed_at"] = time.time()
+    await jobs_2[job_id].put(job.copy())
+
+    return job
+
+
+async def get_job_status_stream_2(job_id: str):
+    queue = jobs_2.get(job_id)
+
+    if not queue:
+        yield f"data: {json.dumps({'status': 'not_found'})}\n\n"
+        return
+
+    while True:
+        data = await queue.get() # type: ignore
+        yield f"data: {json.dumps(data)}\n\n"
+        
+        if data["status"] == "completed":
+            break
+        
+    jobs_2[job_id].task_done()
+    jobs_2.pop(job_id, None)
